@@ -1,0 +1,21 @@
+WORD,ROW,COL,DIR,CLUE
+API,5,5,down,Memungkinkan aplikasi perangkat lunak berkomunikasi dan bertukar data.
+CLOUD,9,0,across,"Menyediakan sumber daya komputasi melalui internet, bukan server lokal."
+DOCKER,1,14,down,Alat untuk mengemas aplikasi dan dependensinya ke dalam kontainer.
+KUBERNETES,2,12,down,"Mengotomatiskan penyebaran, penskalaan, dan pengelolaan aplikasi terkontainerisasi."
+TOKEN,3,13,down,Kredensial digital untuk otentikasi atau otorisasi akses pengguna.
+DEVOPS,5,6,across,Budaya dan praktik yang mengintegrasikan pengembangan perangkat lunak dan operasi TI.
+CACHE,2,5,across,Penyimpanan sementara data yang sering diakses untuk mempercepat pengambilan.
+SQL,13,0,across,Bahasa standar untuk mengelola dan memanipulasi database relasional.
+FRONTEND,8,2,across,Bagian aplikasi yang berinteraksi langsung dengan pengguna (UI/UX).
+BACKEND,13,4,across,"Logika sisi server, database, dan API yang mendukung frontend."
+GIT,4,1,across,Sistem kontrol versi terdistribusi untuk melacak perubahan kode sumber.
+BUILD,0,2,across,Proses otomatis menyusun dan mengompilasi kode sebelum rilis.
+MICROSERVICE,3,0,across,"Arsitektur aplikasi sebagai kumpulan layanan kecil, independen, dan terpisah."
+VIRTUALIZATION,14,0,across,"Membuat versi virtual sumber daya komputasi (server, OS, jaringan)."
+CONTAINER,11,2,across,Unit perangkat lunak yang mengemas kode dan semua dependensinya.
+SERVERLESS,12,5,across,Model komputasi cloud di mana penyedia mengelola server sepenuhnya.
+DATABASE,0,6,across,Koleksi data terorganisir yang disimpan dan diakses secara elektronik.
+FIREWALL,1,0,across,Sistem keamanan jaringan yang memantau dan mengontrol lalu lintas.
+ENCRYPTION,6,0,across,Proses mengubah data menjadi kode untuk mencegah akses tidak sah.
+LOADBALANCER,10,2,across,Mendistribusikan lalu lintas jaringan secara efisien ke beberapa server.

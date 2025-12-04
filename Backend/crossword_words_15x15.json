@@ -1,0 +1,183 @@
+{
+  "gridData": [
+    "..BUILDATABASE.",
+    "FIREWALL......D",
+    ".....CACHE..K.O",
+    "MICROSERVICEUTC",
+    ".GIT........BOK",
+    ".....ADEVOPSEKE",
+    "ENCRYPTION..RER",
+    ".....I......NN.",
+    "..FRONTEND..E..",
+    "CLOUD.......T..",
+    "..LOADBALANCER.",
+    "..CONTAINER.S..",
+    ".....SERVERLESS",
+    "SQL.BACKEND....",
+    "VIRTUALIZATION."
+  ],
+  "words": [
+    {
+      "word": "API",
+      "row": 5,
+      "col": 5,
+      "dir": "down",
+      "clue": "Memungkinkan aplikasi perangkat lunak berkomunikasi dan bertukar data."
+    },
+    {
+      "word": "CLOUD",
+      "row": 9,
+      "col": 0,
+      "dir": "across",
+      "clue": "Menyediakan sumber daya komputasi melalui internet, bukan server lokal."
+    },
+    {
+      "word": "DOCKER",
+      "row": 1,
+      "col": 14,
+      "dir": "down",
+      "clue": "Alat untuk mengemas aplikasi dan dependensinya ke dalam kontainer."
+    },
+    {
+      "word": "KUBERNETES",
+      "row": 2,
+      "col": 12,
+      "dir": "down",
+      "clue": "Mengotomatiskan penyebaran, penskalaan, dan pengelolaan aplikasi terkontainerisasi."
+    },
+    {
+      "word": "TOKEN",
+      "row": 3,
+      "col": 13,
+      "dir": "down",
+      "clue": "Kredensial digital untuk otentikasi atau otorisasi akses pengguna."
+    },
+    {
+      "word": "DEVOPS",
+      "row": 5,
+      "col": 6,
+      "dir": "across",
+      "clue": "Budaya dan praktik yang mengintegrasikan pengembangan perangkat lunak dan operasi TI."
+    },
+    {
+      "word": "CACHE",
+      "row": 2,
+      "col": 5,
+      "dir": "across",
+      "clue": "Penyimpanan sementara data yang sering diakses untuk mempercepat pengambilan."
+    },
+    {
+      "word": "SQL",
+      "row": 13,
+      "col": 0,
+      "dir": "across",
+      "clue": "Bahasa standar untuk mengelola dan memanipulasi database relasional."
+    },
+    {
+      "word": "FRONTEND",
+      "row": 8,
+      "col": 2,
+      "dir": "across",
+      "clue": "Bagian aplikasi yang berinteraksi langsung dengan pengguna (UI/UX)."
+    },
+    {
+      "word": "BACKEND",
+      "row": 13,
+      "col": 4,
+      "dir": "across",
+      "clue": "Logika sisi server, database, dan API yang mendukung frontend."
+    },
+    {
+      "word": "GIT",
+      "row": 4,
+      "col": 1,
+      "dir": "across",
+      "clue": "Sistem kontrol versi terdistribusi untuk melacak perubahan kode sumber."
+    },
+    {
+      "word": "BUILD",
+      "row": 0,
+      "col": 2,
+      "dir": "across",
+      "clue": "Proses otomatis menyusun dan mengompilasi kode sebelum rilis."
+    },
+    {
+      "word": "MICROSERVICE",
+      "row": 3,
+      "col": 0,
+      "dir": "across",
+      "clue": "Arsitektur aplikasi sebagai kumpulan layanan kecil, independen, dan terpisah."
+    },
+    {
+      "word": "VIRTUALIZATION",
+      "row": 14,
+      "col": 0,
+      "dir": "across",
+      "clue": "Membuat versi virtual sumber daya komputasi (server, OS, jaringan)."
+    },
+    {
+      "word": "CONTAINER",
+      "row": 11,
+      "col": 2,
+      "dir": "across",
+      "clue": "Unit perangkat lunak yang mengemas kode dan semua dependensinya."
+    },
+    {
+      "word": "SERVERLESS",
+      "row": 12,
+      "col": 5,
+      "dir": "across",
+      "clue": "Model komputasi cloud di mana penyedia mengelola server sepenuhnya."
+    },
+    {
+      "word": "DATABASE",
+      "row": 0,
+      "col": 6,
+      "dir": "across",
+      "clue": "Koleksi data terorganisir yang disimpan dan diakses secara elektronik."
+    },
+    {
+      "word": "FIREWALL",
+      "row": 1,
+      "col": 0,
+      "dir": "across",
+      "clue": "Sistem keamanan jaringan yang memantau dan mengontrol lalu lintas."
+    },
+    {
+      "word": "ENCRYPTION",
+      "row": 6,
+      "col": 0,
+      "dir": "across",
+      "clue": "Proses mengubah data menjadi kode untuk mencegah akses tidak sah."
+    },
+    {
+      "word": "LOADBALANCER",
+      "row": 10,
+      "col": 2,
+      "dir": "across",
+      "clue": "Mendistribusikan lalu lintas jaringan secara efisien ke beberapa server."
+    }
+  ],
+  "clues": [
+    "Memungkinkan aplikasi perangkat lunak berkomunikasi dan bertukar data.",
+    "Menyediakan sumber daya komputasi melalui internet, bukan server lokal.",
+    "Alat untuk mengemas aplikasi dan dependensinya ke dalam kontainer.",
+    "Mengotomatiskan penyebaran, penskalaan, dan pengelolaan aplikasi terkontainerisasi.",
+    "Kredensial digital untuk otentikasi atau otorisasi akses pengguna.",
+    "Budaya dan praktik yang mengintegrasikan pengembangan perangkat lunak dan operasi TI.",
+    "Penyimpanan sementara data yang sering diakses untuk mempercepat pengambilan.",
+    "Bahasa standar untuk mengelola dan memanipulasi database relasional.",
+    "Bagian aplikasi yang berinteraksi langsung dengan pengguna (UI/UX).",
+    "Logika sisi server, database, dan API yang mendukung frontend.",
+    "Sistem kontrol versi terdistribusi untuk melacak perubahan kode sumber.",
+    "Proses otomatis menyusun dan mengompilasi kode sebelum rilis.",
+    "Arsitektur aplikasi sebagai kumpulan layanan kecil, independen, dan terpisah.",
+    "Membuat versi virtual sumber daya komputasi (server, OS, jaringan).",
+    "Unit perangkat lunak yang mengemas kode dan semua dependensinya.",
+    "Model komputasi cloud di mana penyedia mengelola server sepenuhnya.",
+    "Koleksi data terorganisir yang disimpan dan diakses secara elektronik.",
+    "Sistem keamanan jaringan yang memantau dan mengontrol lalu lintas.",
+    "Proses mengubah data menjadi kode untuk mencegah akses tidak sah.",
+    "Mendistribusikan lalu lintas jaringan secara efisien ke beberapa server."
+  ]
+}

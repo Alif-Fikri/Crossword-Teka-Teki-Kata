@@ -1,0 +1,12 @@
+{
+  "API": "Antarmuka pemrograman aplikasi",
+  "CLOUD": "Layanan komputasi berbasis internet",
+  "DOCKER": "Platform containerisasi",
+  "KUBERNETES": "Platform manajemen container",
+  "TOKEN": "Unit autentikasi atau izin",
+  "DEVOPS": "Proses integrasi dan deployment",
+  "CACHE": "Memori sementara untuk akses cepat",
+  "SQL": "Bahasa kueri database relasional",
+  "FRONTEND": "Bagian aplikasi yang berinteraksi dengan pengguna",
+  "BACKEND": "Bagian aplikasi yang mengelola logika dan data"
+}
