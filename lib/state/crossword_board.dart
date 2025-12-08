@@ -23,6 +23,7 @@ class BoardCell {
     this.acrossWordIndex,
     this.downWordIndex,
     String? entry,
+    this.isFirstLetter = false,
   }) : entry = entry ?? '';
 
   final int row;
@@ -31,6 +32,7 @@ class BoardCell {
   final String solution;
   final int? acrossWordIndex;
   final int? downWordIndex;
+  final bool isFirstLetter;
   String entry;
 
   bool get isEditable => !isBlock;
@@ -46,6 +48,7 @@ class BoardCell {
       acrossWordIndex: acrossWordIndex,
       downWordIndex: downWordIndex,
       entry: entry ?? this.entry,
+      isFirstLetter: isFirstLetter,
     );
   }
 }

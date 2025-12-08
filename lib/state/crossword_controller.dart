@@ -324,10 +324,16 @@ class CrosswordController extends ChangeNotifier {
         final row = word.row + (word.isDown ? j : 0);
         final col = word.col + (word.isAcross ? j : 0);
         final existing = board[row][col];
-        final entry =
-            (row < savedEntries.length && col < savedEntries[row].length)
-            ? savedEntries[row][col]
-            : '';
+        final isFirst = j == 0;
+
+        String entry = '';
+        if (row < savedEntries.length && col < savedEntries[row].length) {
+          entry = savedEntries[row][col];
+        }
+        if (isFirst && entry.isEmpty) {
+          entry = letters[j];
+        }
+
         board[row][col] = BoardCell(
           row: row,
           col: col,
@@ -336,6 +342,7 @@ class CrosswordController extends ChangeNotifier {
           acrossWordIndex: word.isAcross ? i : existing.acrossWordIndex,
           downWordIndex: word.isDown ? i : existing.downWordIndex,
           entry: entry,
+          isFirstLetter: isFirst,
         );
       }
     }

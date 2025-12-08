@@ -473,7 +473,11 @@ class _CrosswordCellWidget extends StatelessWidget {
       }
     }
 
-    final textColor = isIncorrect ? const Color(0xFFB3261E) : Colors.black87;
+    final textColor = isIncorrect
+        ? const Color(0xFFB3261E)
+        : cell.isFirstLetter
+        ? Colors.black87
+        : Colors.black87;
 
     return GestureDetector(
       onTap: cell.isBlock ? null : onTap,
