@@ -66,44 +66,22 @@ class CrosswordService:
         if not puzzle_path.exists():
             raise FileNotFoundError(f"File puzzle tidak ditemukan: {puzzle_path}")
 
+        # Baca file JSON
         with puzzle_path.open("r", encoding="utf8") as fh:
             data = json.load(fh)
-
-        grid = data.get("gridData", [])
-        height = len(grid)
-        width = len(grid[0]) if grid else 0
 
         raw_words: List[Dict] = data.get("words", [])
         clues: List[str] = data.get("clues", [])
 
+        # Tentukan ukuran grid berdasarkan kata-kata
+        width = max((int(info.get("col", 0)) + len(str(info.get("word", ""))) for info in raw_words), default=0)
+        height = max((int(info.get("row", 0)) + len(str(info.get("word", ""))) for info in raw_words), default=0)
+
+        # Buat grid kosong
+        grid: List[List[str]] = [["." for _ in range(width)] for _ in range(height)]
         placements: List[WordPlacement] = []
 
-        def _validate(answer: str, row: int, col: int, direction: str) -> None:
-            length = len(answer)
-            if direction == "across":
-                if col < 0 or col + length > width:
-                    raise ValueError(
-                        f"Word '{answer}' out of horizontal bounds at ({row}, {col})."
-                    )
-            else:
-                if row < 0 or row + length > height:
-                    raise ValueError(
-                        f"Word '{answer}' out of vertical bounds at ({row}, {col})."
-                    )
-
-            for offset, char in enumerate(answer):
-                r = row + (offset if direction == "down" else 0)
-                c = col + (offset if direction == "across" else 0)
-                cell = grid[r][c]
-                if cell == ".":
-                    continue
-                if cell.upper() != char.upper():
-                    raise ValueError(
-                        "Grid letter mismatch for"
-                        f" '{answer}' ({row}, {col}) at offset {offset}:"
-                        f" expected '{cell}', got '{char}'."
-                    )
-
+        # Tempatkan kata-kata di grid
         for idx, info in enumerate(raw_words):
             answer = str(info.get("word", "")).upper()
             direction = str(info.get("dir", "across")).strip().lower() or "across"
@@ -113,8 +91,20 @@ class CrosswordService:
             fallback_clue = clues[idx] if idx < len(clues) else ""
             clue_text = inline_clue or fallback_clue
 
-            _validate(answer, row_val, col_val, direction)
+            # Tempatkan setiap huruf, pastikan tidak bentrok
+            for offset, char in enumerate(answer):
+                r = row_val + (offset if direction == "down" else 0)
+                c = col_val + (offset if direction == "across" else 0)
+                existing = grid[r][c]
+                if existing == ".":
+                    grid[r][c] = char
+                elif existing != char:
+                    raise ValueError(
+                        f"Conflict di ({r},{c}) untuk kata '{answer}':"
+                        f" grid='{existing}' vs kata='{char}'"
+                    )
 
+            # Simpan posisi kata
             placements.append(
                 WordPlacement(
                     answer=answer,
@@ -125,4 +115,7 @@ class CrosswordService:
                 )
             )
 
-        return Puzzle(width=width, height=height, grid=grid, words=placements)
+        # Ubah grid menjadi list of strings
+        grid_str = ["".join(row) for row in grid]
+
+        return Puzzle(width=width, height=height, grid=grid_str, words=placements)
