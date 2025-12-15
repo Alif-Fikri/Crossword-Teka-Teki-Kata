@@ -1,9 +1,7 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-
 import '../state/crossword_board.dart';
 import '../state/crossword_controller.dart';
 import '../utils/formatters.dart';
@@ -21,10 +19,14 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   final FocusNode _inputFocusNode = FocusNode();
   final TextEditingController _inputController = TextEditingController();
+  final ScrollController _horizontalScrollController = ScrollController();
+  final ScrollController _verticalScrollController = ScrollController();
   String _typedClue = '';
   String? _currentFullClue;
   Timer? _clueAnimationTimer;
   bool _completionSheetVisible = false;
+  double _zoomLevel = 1.0;
+  int? _lastWordIndex;
 
   @override
   void initState() {
@@ -41,6 +43,8 @@ class _GameScreenState extends State<GameScreen> {
     _inputFocusNode.dispose();
     _inputController.dispose();
     _clueAnimationTimer?.cancel();
+    _horizontalScrollController.dispose();
+    _verticalScrollController.dispose();
     super.dispose();
   }
 
@@ -56,6 +60,62 @@ class _GameScreenState extends State<GameScreen> {
   void _handleCellTap(CrosswordController controller, int row, int col) {
     controller.selectCell(CellPosition(row, col));
     _requestKeyboard();
+    _scrollToActiveWord(controller);
+  }
+
+  void _scrollToActiveWord(CrosswordController controller) {
+    final currentWord = controller.currentWord;
+    if (currentWord == null) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final rows = controller.board.length;
+      final cols = controller.board.isNotEmpty
+          ? controller.board.first.length
+          : 0;
+      if (rows == 0 || cols == 0) return;
+
+      final minCellSize = 24.0;
+      final screenWidth = MediaQuery.of(context).size.width - 24;
+      final maxCellSize = (screenWidth - 24) / cols;
+      final baseCellSize = maxCellSize.clamp(minCellSize, 40.0);
+      final cellSize = baseCellSize * _zoomLevel;
+
+      final wordLength = currentWord.length;
+      final midOffset = wordLength ~/ 2;
+
+      final targetRow = currentWord.row + (currentWord.isDown ? midOffset : 0);
+      final targetCol =
+          currentWord.col + (currentWord.isAcross ? midOffset : 0);
+
+      if (_horizontalScrollController.hasClients) {
+        final maxScrollH = _horizontalScrollController.position.maxScrollExtent;
+        final targetScrollH =
+            (targetCol * cellSize - screenWidth / 2 + cellSize / 2).clamp(
+              0.0,
+              maxScrollH,
+            );
+        _horizontalScrollController.animateTo(
+          targetScrollH,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+
+      if (_verticalScrollController.hasClients) {
+        final screenHeight = MediaQuery.of(context).size.height;
+        final maxScrollV = _verticalScrollController.position.maxScrollExtent;
+        final targetScrollV = (targetRow * cellSize - screenHeight / 3).clamp(
+          0.0,
+          maxScrollV,
+        );
+        _verticalScrollController.animateTo(
+          targetScrollV,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   void _handleTextChange(String value) {
@@ -138,6 +198,11 @@ class _GameScreenState extends State<GameScreen> {
     final board = controller.board;
     final clueText = _formattedClue(controller.currentWord?.clue);
     _ensureClueAnimation(clueText);
+
+    if (_lastWordIndex != controller.currentWordIndex) {
+      _lastWordIndex = controller.currentWordIndex;
+      _scrollToActiveWord(controller);
+    }
     final displayedClue = _typedClue.isEmpty ? clueText : _typedClue;
     final hintsRemaining = controller.hintsRemainingForCurrentWord;
     final hintsTotal = controller.totalHintsForCurrentWord;
@@ -163,7 +228,7 @@ class _GameScreenState extends State<GameScreen> {
                         Text(
                           formatDuration(controller.elapsed),
                           style: const TextStyle(
-                            fontSize: 22,
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -178,13 +243,27 @@ class _GameScreenState extends State<GameScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 6),
                   _HintButton(
                     hintsRemaining: hintsRemaining,
                     hintsTotal: hintsTotal,
                     onPressed: hintsRemaining > 0
                         ? () => _handleHintPressed(controller)
                         : null,
+                  ),
+                  const SizedBox(width: 6),
+                  _ZoomControls(
+                    zoomLevel: _zoomLevel,
+                    onZoomIn: () {
+                      setState(() {
+                        _zoomLevel = (_zoomLevel + 0.2).clamp(0.7, 2.0);
+                      });
+                    },
+                    onZoomOut: () {
+                      setState(() {
+                        _zoomLevel = (_zoomLevel - 0.2).clamp(0.7, 2.0);
+                      });
+                    },
                   ),
                   IconButton(
                     tooltip: 'Reset permainan',
@@ -205,72 +284,91 @@ class _GameScreenState extends State<GameScreen> {
                           builder: (context, constraints) {
                             final rows = board.length;
                             final cols = board.first.length;
-                            final cellSize = (constraints.maxWidth) / cols;
-                            final gridSize = cellSize * rows;
+                            const minCellSize = 24.0;
+                            final maxCellSize =
+                                (constraints.maxWidth - 24) / cols;
+                            final baseCellSize = maxCellSize.clamp(
+                              minCellSize,
+                              40.0,
+                            );
+                            final cellSize = baseCellSize * _zoomLevel;
+
+                            final gridWidth = cellSize * cols;
+                            final gridHeight = cellSize * rows;
                             final wordCells = controller.activeWordCells;
-                            return SizedBox(
-                              width: gridSize,
-                              height: gridSize,
-                              child: Stack(
-                                children: [
-                                  GridView.builder(
-                                    padding: EdgeInsets.zero,
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    gridDelegate:
-                                        SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: cols,
-                                          childAspectRatio: 1,
-                                        ),
-                                    itemCount: rows * cols,
-                                    itemBuilder: (context, index) {
-                                      final row = index ~/ cols;
-                                      final col = index % cols;
-                                      final cell = board[row][col];
-                                      final isSelected =
-                                          controller.selectedCell ==
-                                          CellPosition(row, col);
-                                      final isActive = wordCells.contains(
-                                        CellPosition(row, col),
-                                      );
-                                      return _CrosswordCellWidget(
-                                        cell: cell,
-                                        isSelected: isSelected,
-                                        isActive: isActive,
-                                        onTap: () => _handleCellTap(
-                                          controller,
-                                          row,
-                                          col,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  Align(
-                                    alignment: Alignment.center,
-                                    child: Offstage(
-                                      offstage: false,
-                                      child: SizedBox(
-                                        width: 1,
-                                        height: 1,
-                                        child: TextField(
-                                          controller: _inputController,
-                                          focusNode: _inputFocusNode,
-                                          autofocus: true,
-                                          enableSuggestions: false,
-                                          autocorrect: false,
-                                          maxLength: 1,
-                                          keyboardType: TextInputType.text,
-                                          textCapitalization:
-                                              TextCapitalization.characters,
-                                          decoration: const InputDecoration(
-                                            counterText: '',
+
+                            return SingleChildScrollView(
+                              controller: _horizontalScrollController,
+                              scrollDirection: Axis.horizontal,
+                              child: SingleChildScrollView(
+                                controller: _verticalScrollController,
+                                scrollDirection: Axis.vertical,
+                                child: SizedBox(
+                                  width: gridWidth,
+                                  height: gridHeight,
+                                  child: Stack(
+                                    children: [
+                                      GridView.builder(
+                                        padding: EdgeInsets.zero,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        gridDelegate:
+                                            SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount: cols,
+                                              childAspectRatio: 1,
+                                            ),
+                                        itemCount: rows * cols,
+                                        itemBuilder: (context, index) {
+                                          final row = index ~/ cols;
+                                          final col = index % cols;
+                                          final cell = board[row][col];
+                                          final isSelected =
+                                              controller.selectedCell ==
+                                              CellPosition(row, col);
+                                          final isActive = wordCells.contains(
+                                            CellPosition(row, col),
+                                          );
+                                          return _CrosswordCellWidget(
+                                            cell: cell,
+                                            isSelected: isSelected,
+                                            isActive: isActive,
+                                            cellSize: cellSize,
+                                            onTap: () => _handleCellTap(
+                                              controller,
+                                              row,
+                                              col,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      Align(
+                                        alignment: Alignment.center,
+                                        child: Offstage(
+                                          offstage: false,
+                                          child: SizedBox(
+                                            width: 1,
+                                            height: 1,
+                                            child: TextField(
+                                              controller: _inputController,
+                                              focusNode: _inputFocusNode,
+                                              autofocus: true,
+                                              enableSuggestions: false,
+                                              autocorrect: false,
+                                              maxLength: 1,
+                                              keyboardType: TextInputType.text,
+                                              textCapitalization:
+                                                  TextCapitalization.characters,
+                                              decoration: const InputDecoration(
+                                                counterText: '',
+                                              ),
+                                              onChanged: _handleTextChange,
+                                            ),
                                           ),
-                                          onChanged: _handleTextChange,
                                         ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             );
                           },
@@ -281,6 +379,7 @@ class _GameScreenState extends State<GameScreen> {
             const SizedBox(height: 8),
             _ClueBar(
               clue: displayedClue,
+              isCompleted: _isCurrentWordCompleted(controller),
               onPrevious: () {
                 controller.previousWord();
                 _requestKeyboard();
@@ -295,6 +394,25 @@ class _GameScreenState extends State<GameScreen> {
         ),
       ),
     );
+  }
+
+  bool _isCurrentWordCompleted(CrosswordController controller) {
+    final currentWord = controller.currentWord;
+    if (currentWord == null) return false;
+
+    final board = controller.board;
+    for (var i = 0; i < currentWord.length; i++) {
+      final row = currentWord.row + (currentWord.isDown ? i : 0);
+      final col = currentWord.col + (currentWord.isAcross ? i : 0);
+
+      if (row >= board.length || col >= board[row].length) return false;
+
+      final cell = board[row][col];
+      if (cell.entry.toUpperCase() != cell.solution.toUpperCase()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   void _ensureClueAnimation(String clue) {
@@ -434,12 +552,14 @@ class _CrosswordCellWidget extends StatelessWidget {
     required this.cell,
     required this.isSelected,
     required this.isActive,
+    required this.cellSize,
     required this.onTap,
   });
 
   final BoardCell cell;
   final bool isSelected;
   final bool isActive;
+  final double cellSize;
   final VoidCallback onTap;
 
   @override
@@ -479,6 +599,8 @@ class _CrosswordCellWidget extends StatelessWidget {
         ? Colors.black87
         : Colors.black87;
 
+    final fontSize = (cellSize * 0.5).clamp(10.0, 18.0);
+
     return GestureDetector(
       onTap: cell.isBlock ? null : onTap,
       child: Container(
@@ -492,9 +614,9 @@ class _CrosswordCellWidget extends StatelessWidget {
         child: Text(
           cell.isBlock ? '' : cell.entry,
           style: TextStyle(
-            fontSize: 18,
+            fontSize: fontSize,
             fontWeight: FontWeight.w600,
-            letterSpacing: 1.5,
+            letterSpacing: cellSize > 30 ? 1.5 : 0.5,
             color: textColor,
           ),
         ),
@@ -506,11 +628,13 @@ class _CrosswordCellWidget extends StatelessWidget {
 class _ClueBar extends StatelessWidget {
   const _ClueBar({
     required this.clue,
+    required this.isCompleted,
     required this.onPrevious,
     required this.onNext,
   });
 
   final String clue;
+  final bool isCompleted;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
 
@@ -528,16 +652,44 @@ class _ClueBar extends StatelessWidget {
           _ClueNavButton(icon: Icons.chevron_left, onTap: onPrevious),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              clue,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                height: 1.4,
-              ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Text(
+                  clue,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    height: 1.4,
+                    decoration: isCompleted ? TextDecoration.lineThrough : null,
+                    decorationThickness: 2.5,
+                    decorationColor: const Color(0xFF16A34A),
+                  ),
+                ),
+                if (isCompleted)
+                  Positioned(
+                    right: 4,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF16A34A),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.check,
+                        size: 12,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(width: 12),
@@ -619,6 +771,100 @@ class _ClueNavButton extends StatelessWidget {
           ],
         ),
         child: Icon(icon, size: 18),
+      ),
+    );
+  }
+}
+
+class _ZoomControls extends StatelessWidget {
+  const _ZoomControls({
+    required this.zoomLevel,
+    required this.onZoomIn,
+    required this.onZoomOut,
+  });
+
+  final double zoomLevel;
+  final VoidCallback onZoomIn;
+  final VoidCallback onZoomOut;
+
+  @override
+  Widget build(BuildContext context) {
+    final canZoomIn = zoomLevel < 2.0;
+    final canZoomOut = zoomLevel > 0.7;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F6FB),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE1E6F0)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ZoomButton(
+            icon: Icons.remove,
+            enabled: canZoomOut,
+            onPressed: canZoomOut ? onZoomOut : null,
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              '${(zoomLevel * 100).toInt()}%',
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0F172A),
+              ),
+            ),
+          ),
+          _ZoomButton(
+            icon: Icons.add,
+            enabled: canZoomIn,
+            onPressed: canZoomIn ? onZoomIn : null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ZoomButton extends StatelessWidget {
+  const _ZoomButton({
+    required this.icon,
+    required this.enabled,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: enabled ? Colors.white : Colors.grey[200],
+          borderRadius: BorderRadius.circular(999),
+          boxShadow: enabled
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    offset: const Offset(0, 1),
+                    blurRadius: 2,
+                  ),
+                ]
+              : null,
+        ),
+        child: Icon(
+          icon,
+          size: 16,
+          color: enabled ? const Color(0xFF0F172A) : Colors.grey[400],
+        ),
       ),
     );
   }
